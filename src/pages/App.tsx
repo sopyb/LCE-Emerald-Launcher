@@ -59,7 +59,7 @@ export default function App() {
   }, [config.isDayTime]);
 
   const selectedEdition = game.editions.find(
-    (e: any) => e.id === config.profile,
+    (e: any) => e.instanceId === config.profile,
   );
   const selectedVersionName = selectedEdition?.name || "";
   const hasAnyInstall = game.installs.length > 0;

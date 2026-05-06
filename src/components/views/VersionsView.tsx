@@ -439,8 +439,8 @@ const VersionsView = memo(function VersionsView() {
                           onClick={(e) => {
                             e.stopPropagation();
                             playPressSound();
-                            const PANORAMA_PROFILES = ['legacy_evolved', '360revived'];
-                            const panoId = PANORAMA_PROFILES.includes(edition.id) ? edition.id : 'legacy_evolved';
+                            const PANORAMA_PROFILES = ['legacy_evolved', 'vanilla_tu19', '360revived', 'vanilla_tu24'];
+                            const panoId = PANORAMA_PROFILES.includes(edition.id) ? edition.id : 'vanilla_tu19';
                             const panoramaUrl = `/panorama/${panoId}_Panorama_Background_${isDayTime ? 'Day' : 'Night'}.png`;
                             addToSteam(edition.instanceId, edition.name, edition.titleImage, panoramaUrl);
                             setOpenMenuId(null);
