@@ -186,6 +186,7 @@ sudo apt install --reinstall libwebkit2gtk-4.1-0
 - **The Emerald Team** - Technical development and maintenance
 - **4J Studios & Mojang** - Original creators of Legacy Console Edition
 - **The LCE Community** - Research and foundations for LCE on PC
+- **Veroxsity (Racoon)** - Original creator of the C# version of [console2lce](https://github.com/veroxsity/console2lce)
 
 ---
 

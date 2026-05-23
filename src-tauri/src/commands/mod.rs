@@ -1,4 +1,5 @@
 pub mod config;
+pub mod console2lce;
 pub mod download;
 pub mod file_dialogs;
 pub mod game;

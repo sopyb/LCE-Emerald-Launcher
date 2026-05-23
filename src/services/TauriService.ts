@@ -290,4 +290,18 @@ export class TauriService {
   static async readScreenshotAsDataUrl(path: string): Promise<string> {
     return invoke("read_screenshot_as_data_url", { path });
   }
+
+  static async importWorld(
+    inputPath: string,
+    outputPath: string,
+    profile?: string,
+    preserveEntities?: boolean,
+  ): Promise<string> {
+    return invoke("import_world", {
+      inputPath,
+      outputPath,
+      profile: profile ?? null,
+      preserveEntities: preserveEntities ?? null,
+    });
+  }
 }

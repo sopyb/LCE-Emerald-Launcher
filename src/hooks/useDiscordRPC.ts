@@ -66,7 +66,7 @@ export function useDiscordRPC({
         details = tabNames[activeView] || "In Menus";
       }
 
-      await RpcService.updateActivity(details, state, isGameRunning);
+      await RpcService.updateActivity(details, state, isGameRunning, username);
     };
 
     updateRPC();

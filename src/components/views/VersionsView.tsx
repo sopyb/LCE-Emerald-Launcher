@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { TauriService } from "../../services/TauriService";
 import CustomTUModal from "../modals/CustomTUModal";
 import SetUidModal from "../modals/SetUidModal";
+import ImportWorldModal from "../modals/ImportWorldModal";
 import {
   useUI,
   useConfig,
@@ -75,6 +76,8 @@ const VersionsView = memo(function VersionsView() {
   const [isSetUidModalOpen, setIsSetUidModalOpen] = useState(false);
   const [setUidTargetId, setSetUidTargetId] = useState("");
   const [editingEdition, setEditingEdition] = useState<Edition | null>(null);
+  const [isImportWorldModalOpen, setIsImportWorldModalOpen] = useState(false);
+  const [importWorldTarget, setImportWorldTarget] = useState<{ id: string; name: string } | null>(null);
   const [initialPath, setInitialPath] = useState<string>("");
   const [hoveredBtn, setHoveredBtn] = useState<{
     row: number;
@@ -205,6 +208,12 @@ const VersionsView = memo(function VersionsView() {
     } catch (e) {
       if (e !== "CANCELED") console.error(e);
     }
+  };
+
+  const handleImportWorld = (instanceId: string) => {
+    const edition = editions.find((e: Edition) => e.instanceId === instanceId);
+    setImportWorldTarget({ id: instanceId, name: edition?.name ?? instanceId });
+    setIsImportWorldModalOpen(true);
   };
 
   return (
@@ -534,6 +543,30 @@ const VersionsView = memo(function VersionsView() {
                           onClick={(e) => {
                             e.stopPropagation();
                             playPressSound();
+                            handleImportWorld(edition.instanceId);
+                            setOpenMenuId(null);
+                          }}
+                          className="w-full text-left px-3 py-2 text-xs text-[#dddddd] hover:text-white hover:bg-white/10 flex items-center gap-2 transition-colors mc-text-shadow"
+                        >
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            className="w-3.5 h-3.5"
+                          >
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                            <polyline points="7 10 12 15 17 10" />
+                            <line x1="12" y1="15" x2="12" y2="3" />
+                          </svg>
+                          Import World
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            playPressSound();
                             setSetUidTargetId(edition.instanceId);
                             setIsSetUidModalOpen(true);
                             setOpenMenuId(null);
@@ -725,6 +758,15 @@ const VersionsView = memo(function VersionsView() {
         instances={editions}
         installedVersions={installedVersions}
         targetInstanceId={setUidTargetId}
+      />
+
+      <ImportWorldModal
+        isOpen={isImportWorldModalOpen}
+        onClose={() => { setIsImportWorldModalOpen(false); setImportWorldTarget(null); }}
+        playPressSound={playPressSound}
+        playBackSound={playBackSound}
+        targetInstanceId={importWorldTarget?.id ?? ""}
+        targetInstanceName={importWorldTarget?.name ?? ""}
       />
 
       {deleteConfirmEdition && (

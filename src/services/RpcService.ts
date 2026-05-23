@@ -5,6 +5,7 @@ import {
   Assets,
   Timestamps,
   Button,
+  Party,
 } from "tauri-plugin-drpc/activity";
 class RPC {
   private startTime: number = Date.now();
@@ -36,6 +37,7 @@ class RPC {
     details: string,
     state: string,
     isPlaying: boolean = false,
+    username: string,
   ) {
     if (!this.initialized) {
       await this.StartRPC();
@@ -46,6 +48,7 @@ class RPC {
     activity.setDetails(details);
     activity.setState(state);
     activity.setActivity(ActivityType.Playing);
+    activity.setParty(new Party(`emerald_${username}`, [1, 2]));
     const assets = new Assets();
     assets.setLargeImage("logo");
     assets.setLargeText("LCE Emerald Launcher");

@@ -4,6 +4,7 @@ mod config;
 mod util;
 mod platform;
 mod networking;
+pub mod console2lce;
 mod commands;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -78,6 +79,7 @@ pub fn run() {
             steam::add_to_steam,
             proxy_cmd::http_proxy_request,
             game::get_instance_path,
+            commands::console2lce::import_world,
             stun::stun_discover,
             direct::start_direct_proxy,
             relay::start_relay_proxy,

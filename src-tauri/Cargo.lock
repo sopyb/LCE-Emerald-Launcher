@@ -1017,15 +1017,20 @@ name = "emerald-legacy-launcher"
 version = "1.2.1"
 dependencies = [
  "base64 0.21.7",
+ "byteorder",
+ "flate2",
  "futures-util",
  "http 1.4.0",
  "image 0.24.9",
  "libc",
+ "lzxd",
+ "once_cell",
  "rand 0.8.5",
  "reqwest 0.11.27",
  "rfd",
  "serde",
  "serde_json",
+ "sha1",
  "steam_shortcuts_util",
  "tauri",
  "tauri-build",
@@ -2504,6 +2509,12 @@ name = "log"
 version = "0.4.29"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5e5032e24019045c762d3c0f28f5b6b8bbf38563a65908389bf7978758920897"
+
+[[package]]
+name = "lzxd"
+version = "0.2.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7b29dffab797218e12e4df08ef5d15ab9efca2504038b1b32b9b32fc844b39c9"
 
 [[package]]
 name = "mac"
