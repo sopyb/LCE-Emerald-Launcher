@@ -160,6 +160,14 @@ const SPLASHES = [
   "LGTM",
   "git revert",
   "We do not crypto mine on your computer.",
+  "100% legal!",
+  "Definitely not pirated",
+  "Long Live LCE!",
+  "For the community, by the community!",
+  "Not affiliated with Microslop",
+  "What is nether update",
+  "To the good old days",
+  "Also try : Minecraft Pocket Edition",
 ];
 
 interface AudioControllerProps {
