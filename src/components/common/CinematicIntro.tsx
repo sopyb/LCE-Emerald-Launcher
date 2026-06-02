@@ -65,7 +65,7 @@ export function CinematicIntro({ onComplete, startMusic }: CinematicIntroProps) 
                 <motion.img
                   key="lceteam"
                   src="/images/LCE Team.png"
-                  className="max-w-xl object-contain"
+                  className="max-w-3xl object-contain"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
@@ -77,7 +77,7 @@ export function CinematicIntro({ onComplete, startMusic }: CinematicIntroProps) 
                 <motion.img
                   key="esrb"
                   src="/images/esrb_warning.png"
-                  className="max-w-xl object-contain"
+                  className="max-w-3xl object-contain"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}

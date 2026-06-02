@@ -36,14 +36,9 @@ const SERVERS_URL =
 const SERVERS_BASE =
   "https://raw.githubusercontent.com/bytebukkit/servers/refs/heads/main";
 const CATEGORY_TABS = ["Skin", "Texture", "World", "Mod", "DLC"] as const;
-const ALL_TABS = [
-  ...CATEGORY_TABS,
-  "Versions",
-  "Installed",
-  "Server",
-  "Plugins",
-  "Search",
-] as const;
+const UTILITY_TABS = ["Versions", "Installed", "Search"] as const;
+const SERVER_TABS = ["Server", "Plugins"] as const;
+const ALL_TABS = [...CATEGORY_TABS, ...UTILITY_TABS, ...SERVER_TABS] as const;
 type TabType = (typeof ALL_TABS)[number];
 interface RegistryPackage {
   id: string;
@@ -506,8 +501,49 @@ const WorkshopView = memo(function WorkshopView() {
         Workshop
       </h2>
 
-      <div className="flex items-center justify-center gap-2 mb-6 w-full flex-wrap px-4">
-        {ALL_TABS.map((tab) => {
+      <div className="flex items-center justify-center gap-2 mb-4 w-full flex-wrap px-4">
+        {CATEGORY_TABS.map((tab) => {
+          const isActive = tab === activeTab;
+          return (
+            <button
+              key={tab}
+              onClick={() => selectTab(tab)}
+              className={`
+                relative h-10 px-5 text-sm mc-text-shadow tracking-widest border-none outline-none cursor-pointer transition-all
+                ${isActive ? "text-[#FFFF55] scale-105" : "text-white hover:text-[#FFFF55] hover:scale-105"}
+              `}
+              style={{
+                backgroundImage: isActive
+                  ? "url('/images/button_highlighted.png')"
+                  : "url('/images/Button_Background.png')",
+                backgroundSize: "100% 100%",
+                imageRendering: "pixelated",
+              }}
+            >
+              {tab.toUpperCase()}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="flex items-center justify-center gap-2 mb-4 w-full flex-wrap px-4">
+        {SERVER_TABS.map((tab) => {
+          const isActive = tab === activeTab;
+          return (
+            <button
+              key={tab}
+              onClick={() => selectTab(tab)}
+              className={`
+                relative h-8 px-4 text-xs mc-text-shadow tracking-widest border outline-none cursor-pointer transition-all
+                ${isActive ? "text-[#FFFF55] border-[#FFFF55] bg-black/40" : "text-[#A0A0A0] border-[#444] hover:text-white hover:border-[#888]"}
+              `}
+            >
+              {tab.toUpperCase()}
+            </button>
+          );
+        })}
+        <div className="w-px h-6 bg-[#444] mx-2" />
+        {UTILITY_TABS.map((tab) => {
           const isActive = tab === activeTab;
           const updateCount =
             tab === "Installed"
@@ -518,16 +554,9 @@ const WorkshopView = memo(function WorkshopView() {
               key={tab}
               onClick={() => selectTab(tab)}
               className={`
-                relative h-10 px-6 text-lg mc-text-shadow tracking-widest border-none outline-none cursor-pointer transition-all
-                ${isActive ? "text-[#FFFF55] scale-105" : "text-white hover:text-[#FFFF55] hover:scale-105"}
+                relative h-8 px-4 text-xs mc-text-shadow tracking-widest border outline-none cursor-pointer transition-all
+                ${isActive ? "text-[#FFFF55] border-[#FFFF55] bg-black/40" : "text-[#A0A0A0] border-[#444] hover:text-white hover:border-[#888]"}
               `}
-              style={{
-                backgroundImage: isActive
-                  ? "url('/images/button_highlighted.png')"
-                  : "url('/images/Button_Background.png')",
-                backgroundSize: "100% 100%",
-                imageRendering: "pixelated",
-              }}
             >
               {tab.toUpperCase()}
               {updateCount > 0 && (
@@ -540,16 +569,9 @@ const WorkshopView = memo(function WorkshopView() {
         })}
       </div>
 
-      <div className="w-[98%] flex-1 relative overflow-hidden">
-        <AnimatePresence mode="wait">
-          {showSearch ? (
-            <motion.div
-              key={isInstalledTab ? "installed-tab" : "search-tab"}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="absolute inset-0 flex flex-col pt-2"
-            >
+      <div className="w-[98%] flex-1 relative overflow-hidden mc-options-bg">
+        {showSearch ? (
+          <div className="absolute inset-0 flex flex-col pt-2">
               <div className="flex items-center gap-3 px-6 pb-4">
                 <div
                   className="flex items-center flex-1 h-12 px-4 border-2 border-[#444] bg-black/40 rounded shadow-inner"
@@ -745,40 +767,21 @@ const WorkshopView = memo(function WorkshopView() {
                   </div>
                 )}
               </div>
-            </motion.div>
-          ) : loading ? (
-            <motion.div
-              key="loading"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 flex items-center justify-center"
-            >
+          </div>
+        ) : loading ? (
+          <div className="absolute inset-0 flex items-center justify-center">
               <span className="text-3xl text-[#FFFF55] mc-text-shadow tracking-widest animate-pulse uppercase">
                 Searching Archives...
               </span>
-            </motion.div>
-          ) : error ? (
-            <motion.div
-              key="error"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 flex items-center justify-center"
-            >
+          </div>
+        ) : error ? (
+          <div className="absolute inset-0 flex items-center justify-center">
               <span className="text-xl text-red-500 mc-text-shadow uppercase tracking-widest">
                 {error}
               </span>
-            </motion.div>
-          ) : (
-            <motion.div
-              key={activeTab}
-              ref={gridRef}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="absolute inset-0 overflow-y-auto p-6 scroll-smooth"
-            >
+          </div>
+        ) : (
+          <div ref={gridRef} className="absolute inset-0 overflow-y-auto p-6 scroll-smooth">
               {filteredItems.length === 0 ? (
                 <div className="flex items-center justify-center h-full">
                   <span className="text-2xl text-[#E0E0E0] mc-text-shadow uppercase tracking-widest opacity-40">
@@ -805,9 +808,8 @@ const WorkshopView = memo(function WorkshopView() {
                   ))}
                 </div>
               )}
-            </motion.div>
-          )}
-        </AnimatePresence>
+          </div>
+        )}
       </div>
 
       <div className="w-full mt-6 mb-4 flex justify-center">
@@ -1104,26 +1106,8 @@ function PackageModal({
             : "REINSTALL";
   return (
     <>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[200] flex items-center justify-center bg-black/85 backdrop-blur-sm"
-        onClick={onClose}
-      >
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 20, opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          onClick={(e) => e.stopPropagation()}
-          className="flex flex-col w-[640px] max-h-[85vh] overflow-hidden font-['Mojangles'] border-2 border-[#555] rounded-sm"
-          style={{
-            backgroundImage: "url('/images/frame_background.png')",
-            backgroundSize: "100% 100%",
-            imageRendering: "pixelated",
-          }}
-        >
+      <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/85" onClick={onClose}>
+        <div onClick={(e) => e.stopPropagation()} className="flex flex-col w-[640px] max-h-[85vh] overflow-hidden font-['Mojangles'] mc-options-bg">
           <div className="w-full h-[240px] flex-shrink-0 bg-black/60 overflow-hidden relative border-b border-[#444]">
             {imgError ? (
               <div className="absolute inset-0 flex items-center justify-center opacity-20">
@@ -1176,11 +1160,11 @@ function PackageModal({
             <div className="space-y-4">
               {pkg.extended_description &&
                 pkg.extended_description.trim() !== "" && (
-                  <div className="space-y-2 bg-black/20 p-4 border border-[#333] rounded-sm">
-                    <span className="text-[10px] text-[#555] mc-text-shadow uppercase tracking-[0.2em] font-bold">
-                      Plugin Description
+                  <div className="space-y-2 p-4 border border-[#444] bg-black/40">
+                    <span className="text-[10px] text-[#AAAAAA] mc-text-shadow uppercase tracking-[0.2em] font-bold">
+                      Description
                     </span>
-                    <div className="text-sm text-[#A0A0A0] mc-text-shadow leading-relaxed workshop-markdown">
+                    <div className="text-sm text-white mc-text-shadow leading-relaxed workshop-markdown">
                       <ReactMarkdown remarkPlugins={[remarkGfm]}>
                         {pkg.extended_description}
                       </ReactMarkdown>
@@ -1189,9 +1173,9 @@ function PackageModal({
                 )}
             </div>
 
-            <div className="grid grid-cols-2 gap-8 pt-4 border-t border-[#333]">
+            <div className="grid grid-cols-2 gap-8 pt-4 border-t border-[#444]">
               <div className="flex flex-col gap-1.5">
-                <span className="text-[10px] text-[#666] mc-text-shadow uppercase tracking-[0.2em] font-bold">
+                <span className="text-[10px] text-[#888] mc-text-shadow uppercase tracking-[0.2em] font-bold">
                   Metadata
                 </span>
                 <div className="flex flex-col gap-1">
@@ -1435,8 +1419,8 @@ function PackageModal({
               </button>
             </div>
           </div>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       <AnimatePresence>
         {showInstall && (
