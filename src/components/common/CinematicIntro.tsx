@@ -77,7 +77,7 @@ export function CinematicIntro({ onComplete, startMusic }: CinematicIntroProps) 
                 <motion.img
                   key="esrb"
                   src="/images/esrb_warning.png"
-                  className="max-w-3xl object-contain"
+                  className="w-full max-w-6xl object-contain px-8"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}

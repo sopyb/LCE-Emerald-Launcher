@@ -70,7 +70,12 @@ export default function App() {
   const clearError = useCallback(() => game.setError(null), [game]);
   const clearGameUpdate = useCallback(() => game.setGameUpdateMessage(null), [game]);
   const clearSteamSuccess = useCallback(() => game.setSteamSuccessMessage(null), [game]);
-  
+
+  useEffect(() => {
+    if (showIntro && config.skipIntro) {
+      setShowIntro(false);
+    }
+  }, [showIntro, config.skipIntro, setShowIntro]);
 
   useEffect(() => {
     if (config.isLoaded) {
@@ -126,7 +131,7 @@ export default function App() {
     );
   }
 
-  if (showIntro) {
+  if (showIntro && !config.skipIntro) {
     return (
       <div className={`w-screen h-screen overflow-hidden select-none flex flex-col relative bg-black text-white font-['Mojangles'] outline-none focus:outline-none ${!config.animationsEnabled ? "no-animations" : ""}`}>
         <CinematicIntro

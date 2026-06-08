@@ -65,7 +65,8 @@ export function LauncherProvider({ children }: { children: React.ReactNode }) {
     configRaw.rpcEnabled, configRaw.musicVol, configRaw.sfxVol, configRaw.isDayTime,
     configRaw.profile, configRaw.linuxRunner, configRaw.perfBoost, configRaw.customEditions,
     configRaw.legacyMode, configRaw.animationsEnabled, configRaw.mangohudEnabled,
-    configRaw.extraLaunchArgs, configRaw.launchPrefix, configRaw.launchEnvVars, configRaw.startFullscreen
+    configRaw.extraLaunchArgs, configRaw.launchPrefix, configRaw.launchEnvVars, configRaw.startFullscreen,
+    configRaw.skipIntro,
   ]);
 
   const game = useMemo(() => gameRaw, [
@@ -134,7 +135,8 @@ export function LauncherProvider({ children }: { children: React.ReactNode }) {
         extraLaunchArgs: config.extraLaunchArgs,
         launchPrefix: config.launchPrefix,
         launchEnvVars: config.launchEnvVars,
-				startFullscreen: config.startFullscreen
+				startFullscreen: config.startFullscreen,
+				skipIntro: config.skipIntro,
       }).catch(console.error);
     }
   }, [
@@ -143,7 +145,8 @@ export function LauncherProvider({ children }: { children: React.ReactNode }) {
     config.vfxEnabled, config.animationsEnabled,
     config.rpcEnabled, config.musicVol, config.sfxVol, config.legacyMode,
     config.mangohudEnabled, config.extraLaunchArgs, config.launchPrefix,
-    config.launchEnvVars, config.isLoaded, config.startFullscreen
+    config.launchEnvVars, config.isLoaded, config.startFullscreen,
+    config.skipIntro,
   ]);
 
   useEffect(() => {

@@ -24,6 +24,7 @@ export function useAppConfig() {
   const [extraLaunchArgs, setExtraLaunchArgs] = useState<string[] | undefined>();
   const [launchPrefix, setLaunchPrefix] = useState<string | undefined>();
   const [launchEnvVars, setLaunchEnvVars] = useState<Record<string, string> | undefined>();
+  const [skipIntro, setSkipIntro] = useLocalStorage("lce-skip-intro", false);
   useEffect(() => {
     TauriService.loadConfig().then((config) => {
       if (config.username) setUsername(config.username);
@@ -45,6 +46,7 @@ export function useAppConfig() {
       if (config.extraLaunchArgs) setExtraLaunchArgs(config.extraLaunchArgs);
       if (config.launchPrefix) setLaunchPrefix(config.launchPrefix);
       if (config.launchEnvVars) setLaunchEnvVars(config.launchEnvVars);
+      if (config.skipIntro !== undefined) setSkipIntro(config.skipIntro);
       setIsLoaded(true);
     });
   }, []);
@@ -70,9 +72,10 @@ export function useAppConfig() {
         extraLaunchArgs,
         launchPrefix,
         launchEnvVars,
+        skipIntro,
       }).catch(console.error);
     }
-  }, [username, theme, linuxRunner, perfBoost, profile, customEditions, customizations, animationsEnabled, vfxEnabled, rpcEnabled, startFullscreen, musicVol, sfxVol, legacyMode, mangohudEnabled, extraLaunchArgs, launchPrefix, launchEnvVars, isLoaded]);
+  }, [username, theme, linuxRunner, perfBoost, profile, customEditions, customizations, animationsEnabled, vfxEnabled, rpcEnabled, startFullscreen, musicVol, sfxVol, legacyMode, mangohudEnabled, extraLaunchArgs, launchPrefix, launchEnvVars, skipIntro, isLoaded]);
 
   return {
     username,
@@ -118,5 +121,7 @@ export function useAppConfig() {
     setLaunchPrefix,
     launchEnvVars,
     setLaunchEnvVars,
+    skipIntro,
+    setSkipIntro,
   };
 }

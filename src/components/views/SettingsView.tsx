@@ -40,6 +40,8 @@ const SettingsView = memo(function SettingsView() {
     setLaunchPrefix,
     launchEnvVars,
     setLaunchEnvVars,
+    skipIntro,
+    setSkipIntro,
   } = useConfig();
   const {
     currentTrack,
@@ -115,6 +117,11 @@ const SettingsView = memo(function SettingsView() {
   const handleMangohudToggle = () => {
     playPressSound();
     setMangohudEnabled(!mangohudEnabled);
+  };
+
+  const handleSkipIntroToggle = () => {
+    playPressSound();
+    setSkipIntro(!skipIntro);
   };
 
   const handleRunnerToggle = () => {
@@ -416,6 +423,12 @@ const SettingsView = memo(function SettingsView() {
         onClick: handleRpcToggle,
       });
       items.push({
+        id: "skip_intro",
+        label: `Skip Intro: ${skipIntro ? "ON" : "OFF"}`,
+        type: "button",
+        onClick: handleSkipIntroToggle,
+      });
+      items.push({
         id: "legacy",
         label: `Legacy Mode: ${legacyMode ? "ON" : "OFF"}`,
         type: "button",
@@ -540,6 +553,7 @@ const SettingsView = memo(function SettingsView() {
     handleRunnerToggle,
     handlePerfToggle,
     handleMangohudToggle,
+    handleSkipIntroToggle,
     handleResetSetup,
     stopGame,
     downloadRunner,
@@ -550,6 +564,7 @@ const SettingsView = memo(function SettingsView() {
     extraLaunchArgs,
     launchPrefix,
     launchEnvVars,
+    skipIntro,
   ]);
 
   useEffect(() => {
@@ -652,7 +667,7 @@ const SettingsView = memo(function SettingsView() {
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: animationsEnabled ? 0.3 : 0 }}
-      className="flex flex-col items-center w-full max-w-3xl outline-none"
+      className="flex flex-col items-center w-full max-w-5xl outline-none"
     >
       <h2 className="text-2xl text-white mc-text-shadow mt-2 mb-4 border-b-2 border-[#373737] pb-2 w-[40%] max-w-[200px] text-center tracking-widest uppercase opacity-80 font-bold whitespace-nowrap px-4">
         {currentSubMenu === "main"
@@ -669,7 +684,7 @@ const SettingsView = memo(function SettingsView() {
       </h2>
 
       {currentSubMenu === "main" ? (
-        <div className="w-full max-w-[540px] space-y-2 mb-4 p-6 flex flex-col items-center overflow-y-auto max-h-[55vh]">
+        <div className="w-full max-w-[680px] space-y-2 mb-4 p-6 flex flex-col items-center overflow-y-auto max-h-[55vh] settings-scrollbar">
           {settingsItems.map((item, index) => {
             if (item.id === "back") return null;
 
@@ -680,7 +695,7 @@ const SettingsView = memo(function SettingsView() {
                   data-index={index}
                   tabIndex={0}
                   onMouseEnter={() => setFocusIndex(index)}
-                  className="relative w-[360px] h-10 flex items-center justify-center cursor-pointer transition-all outline-none border-none hover:text-[#ffff00] shrink-0"
+                  className="relative w-[480px] h-10 flex items-center justify-center cursor-pointer transition-all outline-none border-none hover:text-[#ffff00] shrink-0"
                   style={getSliderStyle(index)}
                 >
                   <span
@@ -715,7 +730,7 @@ const SettingsView = memo(function SettingsView() {
                 data-index={index}
                 onMouseEnter={() => setFocusIndex(index)}
                 onClick={item.onClick}
-                className={`w-[360px] h-10 flex items-center justify-center px-4 relative z-30 transition-colors outline-none border-none shrink-0 ${
+                className={`w-[480px] h-10 flex items-center justify-center px-4 relative z-30 transition-colors outline-none border-none shrink-0 ${
                   isRed
                     ? focusIndex === index
                       ? "text-red-400"
@@ -736,8 +751,8 @@ const SettingsView = memo(function SettingsView() {
           })}
         </div>
       ) : (
-        <div className="min-w-[420px] w-fit p-4 flex flex-col items-center mc-options-bg">
-          <div className="w-full space-y-3 flex flex-col items-center overflow-y-auto max-h-[50vh] py-2">
+        <div className="min-w-[640px] w-fit p-4 flex flex-col items-center mc-options-bg">
+          <div className="w-full space-y-3 flex flex-col items-center overflow-y-auto max-h-[50vh] py-2 settings-scrollbar">
             {settingsItems.map((item, index) => {
               if (item.id === "back") return null;
 
@@ -748,7 +763,7 @@ const SettingsView = memo(function SettingsView() {
                     data-index={index}
                     tabIndex={0}
                     onMouseEnter={() => setFocusIndex(index)}
-                    className="relative w-[360px] h-10 flex items-center justify-center cursor-pointer transition-all outline-none border-none hover:text-[#ffff00] shrink-0"
+                    className="relative w-[600px] h-10 flex items-center justify-center cursor-pointer transition-all outline-none border-none hover:text-[#ffff00] shrink-0"
                     style={getSliderStyle(index)}
                   >
                     <span
@@ -785,7 +800,7 @@ const SettingsView = memo(function SettingsView() {
                   data-index={index}
                   onMouseEnter={() => setFocusIndex(index)}
                   onClick={item.onClick}
-                  className={`w-[360px] h-10 flex items-center pl-1.5 pr-4 relative z-30 outline-none border-none shrink-0 rounded ${focusIndex === index ? "text-[#ffff00]" : isRed ? "text-red-600" : "text-[#333333]"}`}
+                  className={`w-[600px] h-10 flex items-center pl-1.5 pr-4 relative z-30 outline-none border-none shrink-0 rounded ${focusIndex === index ? "text-[#ffff00]" : isRed ? "text-red-600" : "text-[#333333]"}`}
                 >
                   {isToggle && (
                     <div className="relative w-6 h-6 mr-3 shrink-0">
