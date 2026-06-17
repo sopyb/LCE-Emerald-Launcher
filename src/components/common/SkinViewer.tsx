@@ -35,6 +35,8 @@ const SkinViewer = memo(function SkinViewer({
   const { legacyMode } = useConfig();
   const overlaysRef = useRef<THREE.Mesh[]>([]);
   const capeRef = useRef<THREE.Group | null>(null);
+  const capeOrigRef = useRef<{ y: number; rx: number; meshY: number } | null>(null);
+  const playerGroupRef = useRef<THREE.Group | null>(null);
   const requestRenderRef = useRef<(() => void) | null>(null);
   useEffect(() => {
     if (!mountRef.current) return;
@@ -56,6 +58,7 @@ const SkinViewer = memo(function SkinViewer({
     const playerGroup = new THREE.Group();
     playerGroup.position.y = -1.5;
     scene.add(playerGroup);
+    playerGroupRef.current = playerGroup;
     const textureLoader = new THREE.TextureLoader();
     textureLoader.load(skinUrl || "/images/Default.png", (texture) => {
       texture.magFilter = THREE.NearestFilter;
@@ -343,10 +346,15 @@ const SkinViewer = memo(function SkinViewer({
           capeGroup.rotation.x = 0.15;
           playerGroup.add(capeGroup);
           capeRef.current = capeGroup;
+          capeOrigRef.current = { y: 6, rx: 0.15, meshY: -8 };
         });
       }
 
       playerGroup.rotation.y = -0.3;
+      if (username.toLowerCase() === "dinnerbone") {
+        playerGroup.scale.y = -1;
+        playerGroup.position.y = 1.5;
+      }
       requestRenderRef.current?.();
     });
 
@@ -398,6 +406,26 @@ const SkinViewer = memo(function SkinViewer({
       requestRenderRef.current = null;
     };
   }, [skinUrl, capeUrl]);
+
+  useEffect(() => {
+    const group = playerGroupRef.current;
+    if (!group) return;
+    const isDinnerbone = username.toLowerCase() === "dinnerbone";
+    group.scale.y = isDinnerbone ? -1 : 1;
+    group.position.y = isDinnerbone ? 1.5 : -1.5;
+    const cape = capeRef.current;
+    const orig = capeOrigRef.current;
+    if (cape && orig) {
+      cape.position.y = isDinnerbone ? -orig.y : orig.y;
+      cape.rotation.x = isDinnerbone ? -orig.rx : orig.rx;
+      cape.children.forEach((child) => {
+        if (child instanceof THREE.Mesh) {
+          child.position.y = isDinnerbone ? -orig.meshY : orig.meshY;
+        }
+      });
+    }
+    requestRenderRef.current?.();
+  }, [username]);
 
   useEffect(() => {
     if (!isFocusedSection) {
