@@ -35,11 +35,7 @@ const VERSIONS_BASE =
   "https://raw.githubusercontent.com/LCE-Hub/LCE-Workshop/refs/heads/main/.00versions";
 //const PLUGINS_BASE =
 //  "https://raw.githubusercontent.com/LCE-Hub/LCE-Workshop/refs/heads/main/.00plugins";
-const BYTEBUKKIT_BASE = "https://emerald-bytebukkit.onrender.com";
-const SERVERS_URL =
-  "https://raw.githubusercontent.com/bytebukkit/servers/refs/heads/main/servers.json";
-const SERVERS_BASE =
-  "https://raw.githubusercontent.com/bytebukkit/servers/refs/heads/main";
+const LCEONLINE_BASE = "https://api.mclegacyedition.xyz";
 const CATEGORY_TABS = [
   "Skin",
   "Texture",
@@ -68,7 +64,7 @@ interface RegistryPackage {
   download_count?: number;
   game_version?: string;
   github_url?: string;
-  file_name?: string;
+  download_url?: string;
   file_size?: number;
   server_address?: string;
   server_discord?: string;
@@ -79,32 +75,35 @@ interface RegistryPackage {
 }
 
 interface ServerListing {
-  server_name: string;
-  server_type: string;
-  server_address: string;
-  server_owner: string;
-  server_discord?: string;
-  console_version: string;
-  server_icon: string;
+  id: string;
+  owner: string;
+  name: string;
+  short_descripton: string
+  description: string;
+  discord?: string;
+  version: string;
+  type: string;
+  ip: string;
+  port: string;
+  icon: string;
 }
 
-interface ByteBukkitAddon {
+interface LCEOnlineAddon {
   id: string;
   name: string;
   short_description: string;
   description: string;
   category: string;
   game_version: string;
-  visibility: string;
   github_url?: string;
   created_at: string;
   likes: number;
   downloads: number;
-  file_name: string;
+  download_url: string;
   file_size: number;
-  has_image: boolean;
-  username: string;
-  displayName: string;
+  icon_url: string;
+  has_icon: boolean;
+  author: string;
 }
 
 interface PluginRegistryEntry {
@@ -223,24 +222,24 @@ const WorkshopView = memo(function WorkshopView({
   }, [refreshInstalledPlugins]);
 
   useEffect(() => {
-    fetch(`${BYTEBUKKIT_BASE}/api/addons?limit=500`)
+    fetch(`${LCEONLINE_BASE}/plugins`)
       .then((r) => r.json())
-      .then((data: ByteBukkitAddon[]) => {
+      .then((data: LCEOnlineAddon[]) => {
         setServerPlugins(
           data.map((a) => ({
             id: a.id,
             name: a.name,
-            author: a.displayName || a.username,
+            author: a.author,
             description: a.short_description,
             extended_description: a.description,
             category: [a.category],
-            thumbnail: `${BYTEBUKKIT_BASE}/api/addons/${a.id}/icon`,
+            thumbnail: a.icon_url,
             version: "1.0",
             likes: a.likes,
             download_count: a.downloads,
             game_version: a.game_version,
             github_url: a.github_url,
-            file_name: a.file_name,
+            download_url: a.download_url,
             file_size: a.file_size,
           })),
         );
@@ -249,22 +248,22 @@ const WorkshopView = memo(function WorkshopView({
   }, []);
 
   useEffect(() => {
-    fetch(SERVERS_URL)
+    fetch(`${LCEONLINE_BASE}/servers`)
       .then((r) => r.json())
-      .then((data: { servers: ServerListing[] }) => {
+      .then((data: ServerListing[]) => {
         setServerListings(
-          data.servers.map((s) => ({
-            id: s.server_name.toLowerCase().replace(/\s+/g, "-"),
-            name: s.server_name,
-            author: s.server_owner,
-            description: s.server_address,
-            extended_description: `**Server:** ${s.server_type}\n**Version:** ${s.console_version}\n**Owner:** ${s.server_owner}`,
-            category: [s.server_type],
-            thumbnail: `${SERVERS_BASE}${s.server_icon}`,
-            version: s.console_version,
-            server_address: s.server_address,
-            server_discord: s.server_discord ?? "",
-            server_type: s.server_type,
+          data.map((s) => ({
+            id: s.id,
+            name: s.name,
+            author: s.owner,
+            description: s.ip,
+            extended_description: `**Server:** ${s.type}\n**Version:** ${s.version}\n**Owner:** ${s.owner}`,
+            category: [s.type],
+            thumbnail: s.icon,
+            version: s.version,
+            server_address: s.ip,
+            server_discord: s.discord ?? "",
+            server_type: s.type,
           })),
         );
       })
@@ -507,7 +506,7 @@ const WorkshopView = memo(function WorkshopView({
     if (!workshopTarget || loading) return;
 
     if (
-      workshopTarget.type === "bytebukkit" && serverPlugins.length === 0
+      workshopTarget.type === "lceonline" && serverPlugins.length === 0
     )
       return;
     if (
@@ -524,7 +523,7 @@ const WorkshopView = memo(function WorkshopView({
     let tab: TabType | undefined;
 
     switch (workshopTarget.type) {
-      case "bytebukkit":
+      case "lceonline":
         pkg = serverPlugins.find((p) => p.id === workshopTarget.id);
         tab = "Server Plugins";
         break;
@@ -987,11 +986,11 @@ const WorkshopView = memo(function WorkshopView({
               {(activeTab === "Server Plugins" || activeTab === "Server") && (
                 <div className="flex justify-center pt-4 pb-2">
                   <img
-                    src="/images/bytebukkit.png"
-                    alt="ByteBukkit"
+                    src="/images/lceonline.png"
+                    alt="LCEOnline"
                     className="h-5 opacity-70 cursor-pointer"
                     onClick={() =>
-                      TauriService.openUrl("https://bytebukkit.github.io")
+                      TauriService.openUrl("https://mclegacyedition.xyz/")
                     }
                   />
                 </div>
@@ -1326,12 +1325,12 @@ function PackageModal({
       try {
         const path = await TauriService.saveFileDialog(
           "Save Server Plugin",
-          pkg.file_name || `${pkg.name}.dll`,
+          `${pkg.name}.dll`,
           ["*.dll", "*"],
         );
         if (!path) return;
         const response = await fetch(
-          `${BYTEBUKKIT_BASE}/api/addons/${pkg.id}/download`,
+          `${pkg.download_url}`,
         );
         const blob = await response.blob();
         const buffer = await blob.arrayBuffer();
@@ -1499,7 +1498,7 @@ function PackageModal({
                       </div>
                       <div className="flex justify-between text-xs">
                         <span className="text-[#888] mc-text-shadow">
-                          Console:
+                          Version:
                         </span>
                         <span className="text-white mc-text-shadow">
                           {pkg.version}
@@ -1562,7 +1561,7 @@ function PackageModal({
                           File:
                         </span>
                         <span className="text-white mc-text-shadow truncate ml-2">
-                          {pkg.file_name || "N/A"}
+                          {pkg.name || "N/A"}
                         </span>
                       </div>
                       {pkg.file_size && (
