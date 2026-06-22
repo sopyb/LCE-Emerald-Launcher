@@ -30,7 +30,7 @@ const BASE_EDITIONS = [
     id: "legacy_evolved",
     name: "neoLegacy",
     desc: "Backporting newer title updates and Minigames back to LCE",
-    url: "https://git.neolegacy.dev/neoStudiosLCE/neoLegacy/releases/download/latest/neoLegacyWindows64.zip",
+    url: "https://bucket.ibatv.xyz/neolegacy/Release.zip", //neo: remember to change it after 1.4.0.
     titleImage: "/images/minecraft_title_neoLegacy.png",
     supportsSlimSkins: true,
     logo: "/images/neoLegacy.png",
@@ -72,7 +72,7 @@ const PARTNERSHIP_SERVERS = [
     name: "Kowhaifans Clubhouse",
     ip: "lce.kowhaifan.net",
     port: 25565,
-  }
+  },
 ];
 
 interface GameManagerProps {
@@ -165,7 +165,12 @@ export function useGameManager({
           ? `https://api.github.com/repos/${owner}/${repo}`
           : `${urlObj.origin}/api/v1/repos/${owner}/${repo}`;
 
-        const res = await TauriService.httpProxyRequest("GET", `${apiBase}/releases`, null, {});
+        const res = await TauriService.httpProxyRequest(
+          "GET",
+          `${apiBase}/releases`,
+          null,
+          {},
+        );
         if (res.status >= 200 && res.status < 300) {
           const data = JSON.parse(res.body);
           let tags: string[] = data
