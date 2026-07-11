@@ -71,11 +71,22 @@ export const BASE_EDITIONS = [
     id: "moon_edition",
     name: "Minecraft: Moon Edition",
     desc: "Galacticraft LCE port (Modded build!)",
-    url: "https://INTENTIONALLY_INVALID_LINK_BECAUSE_FUCK_YOU_THATS_WHY", //neo: placeholder for now
+    url: "https://github.com/blazin-blaze/moon-edition/releases/download/v1.0.1/moonEditionWindows64.zip",
     titleImage: "/images/minecraft_title_moon.png",
     supportsSlimSkins: false,
     logo: "/images/moonEdition.png",
     panorama: "moonedition",
+  },
+  {
+    id: "lceonline",
+    name: "LCE Online Client",
+    desc: "Restoring the classic LCE online experience with friends, world hosting, leaderboards & more.",
+    url: "https://github.com/lceonline/MCLEClient/releases/download/v1.0.0b/LCENWindows64.zip",
+    titleImage: "/images/lceonline.png",
+    supportsSlimSkins: false,
+    logo: "/images/lce_online.png",
+    panorama: "vanilla_tu19",
+    lceOnline: true,
   },
 ];
 
@@ -481,10 +492,18 @@ export function useGameManager({
     setIsGameRunning(true);
     try {
       getCurrentWindow().minimize();
+      const currentEdition = editions.find((e) => e.instanceId === profile);
       await TauriService.launchGame(
         profile,
         PARTNERSHIP_SERVERS,
-        extraLaunchArgs,
+        currentEdition?.lceOnline
+          ? extraLaunchArgs!.concat([
+              "-token",
+              localStorage.getItem("lceonline_session")
+                ? JSON.parse(localStorage.getItem("lceonline_session")!).accessToken
+                : "",
+            ])
+          : extraLaunchArgs,
       );
     } catch (e: unknown) {
       console.error(e);

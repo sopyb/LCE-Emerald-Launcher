@@ -18,7 +18,7 @@ import OptionsEditorView from "../components/views/OptionsEditorView";
 import ModelEditorView from "../components/views/ModelEditorView";
 import ScreenshotsView from "../components/views/ScreenshotsView";
 import SwfView from "../components/views/SwfView";
-import LceLiveView from "../components/views/LceLiveView";
+import LceOnlineView from "../components/views/LceOnlineView";
 import CreditsView from "../components/views/CreditsView";
 import SkinViewer from "../components/common/SkinViewer";
 import PanoramaBackground from "../components/common/PanoramaBackground";
@@ -35,7 +35,8 @@ import {
   useSkin,
 } from "../context/LauncherContext";
 import { TauriService } from "../services/TauriService";
-import { useLceLiveNotifications } from "../hooks/useLceLiveNotifications";
+import { lceOnlineService } from "../services/LceOnlineService";
+import { useLceOnlineNotifications } from "../hooks/useLceOnlineNotifications";
 import { usePluginViews } from "../plugins/PluginContext";
 import { usePlatform } from "../hooks/usePlatform";
 import { PluginManager } from "../plugins/PluginManager";
@@ -67,12 +68,13 @@ export default function App() {
   const game = useGame();
   const skin = useSkin();
   const { skinUrl, setSkinUrl, capeUrl } = skin;
-  const notifications = useLceLiveNotifications();
+  const notifications = useLceOnlineNotifications();
   const {
     friendRequestMessage,
-    gameInviteMessage,
+    InviteMessage,
     clearFriendRequestMessage,
-    clearGameInviteMessage,
+    clearInviteMessage,
+    invites
   } = notifications;
   const [showSetup, setShowSetup] = useState(false);
   const [isSetupChecked, setIsSetupChecked] = useState(false);
@@ -157,16 +159,22 @@ export default function App() {
           return;
         }
 
-        if (
-          action === "lcelive" &&
-          parts.length >= 2 &&
-          parts[1] === "addfriend"
-        ) {
-          const username = parsed.searchParams.get("username");
-          if (username) {
-            setActiveView("lcelive");
-            setAddFriendTarget(username);
-            return;
+        if (action === "lceonline" && parts.length >= 2) {
+          if (parts[1] === "auth") {
+            const token = parsed.searchParams.get("token");
+            if (token) {
+              lceOnlineService.loginWithTokenAndFetchAccount(token);
+              setActiveView("lceonline");
+              return;
+            }
+          }
+          if (parts[1] === "addfriend") {
+            const username = parsed.searchParams.get("username");
+            if (username) {
+              setActiveView("lceonline");
+              setAddFriendTarget(username);
+              return;
+            }
           }
         }
 
@@ -614,11 +622,12 @@ export default function App() {
                   {activeView === "swf-editor" && (
                     <SwfView key="swf-editor-view" />
                   )}
-                  {activeView === "lcelive" && (
-                    <LceLiveView
-                      key="lcelive-view"
+                  {activeView === "lceonline" && (
+                    <LceOnlineView
+                      key="lceonline-view"
                       addFriendTarget={addFriendTarget}
                       onClearAddFriendTarget={() => setAddFriendTarget(null)}
+                      invites={invites}
                     />
                   )}
                   {activeView === "skins" && <SkinsView key="skins-view" />}
@@ -662,18 +671,18 @@ export default function App() {
           onClose={clearFriendRequestMessage}
           onClick={() => {
             clearFriendRequestMessage();
-            setActiveView("lcelive");
+            setActiveView("lceonline");
           }}
           title="Friend Request"
           variant="update"
         />
 
         <AchievementToast
-          message={gameInviteMessage}
-          onClose={clearGameInviteMessage}
+          message={InviteMessage}
+          onClose={clearInviteMessage}
           onClick={() => {
-            clearGameInviteMessage();
-            setActiveView("lcelive");
+            clearInviteMessage();
+            setActiveView("lceonline");
           }}
           title="Game Invite"
           variant="update"
