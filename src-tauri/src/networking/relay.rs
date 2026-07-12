@@ -1,6 +1,8 @@
 use tauri::State;
+use tauri::webview::cookie::time::Duration;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
+use tokio::time::sleep;
 use tokio_util::sync::CancellationToken;
 use crate::state::ProxyGuard;
 const PROXY_ADDR: &str = "proxy.mclegacyedition.xyz:2052"; //neo: yeah bro im hardcoding it
@@ -10,7 +12,7 @@ async fn read_line(stream: &mut TcpStream) -> Result<String, String> {
     loop {
         stream.read_exact(&mut byte).await.map_err(|e| e.to_string())?;
         if byte[0] == b'\n' { break; }
-        buf.push(byte[0]);
+        if byte[0] != b'\r' { buf.push(byte[0]); }
     }
     String::from_utf8(buf).map_err(|e| e.to_string())
 }
@@ -32,18 +34,23 @@ async fn run_host_relay(
         .map_err(|e| format!("Proxy connect failed: {}", e))?;
 
     write_line(&mut host_conn, &format!("HOST {} 0", auth_token)).await?;
-    let game_stream = loop {
-        match TcpStream::connect(format!("127.0.0.1:{}", game_port)).await {
-            Ok(s) => break s,
-            Err(_) => {
-                tokio::select! {
-                    _ = cancel.cancelled() => return Err("Cancelled".into()),
-                    _ = tokio::time::sleep(std::time::Duration::from_secs(1)) => {}
+    let game_stream = tokio::time::timeout(
+        std::time::Duration::from_secs(30),
+        async {
+            loop {
+                match TcpStream::connect(format!("127.0.0.1:{}", game_port)).await {
+                    Ok(s) => return Ok::<_, String>(s),
+                    Err(_) => {
+                        tokio::select! {
+                            _ = cancel.cancelled() => return Err("Cancelled".into()),
+                            _ = tokio::time::sleep(std::time::Duration::from_secs(1)) => {}
+                        }
+                    }
                 }
             }
         }
-    };
-
+    ).await
+    .map_err(|_| "Timed out waiting for game to start".to_string())??;
     let client_line = read_line(&mut host_conn).await?;
     let client_parts: Vec<&str> = client_line.split_whitespace().collect();
     if client_parts.len() < 2 || client_parts[0] != "CLIENT" {
@@ -167,7 +174,9 @@ pub async fn start_host_relay(
     let session_id = "__host__".to_string();
     {
         let mut tokens = proxy_state.cancel_tokens.lock().await;
-        tokens.insert(session_id.clone(), cancel.clone());
+        if let Some(old) = tokens.insert(session_id.clone(), cancel.clone()) {
+            old.cancel();
+        }
     }
 
     let result = run_host_relay(&proxy_state, &addr, &auth_token, game_port, cancel).await;
@@ -205,11 +214,12 @@ pub async fn start_relay_proxy(
 #[tauri::command]
 pub async fn stop_proxy(proxy_state: State<'_, ProxyGuard>, session_id: String) -> Result<(), String> {
     let mut tokens = proxy_state.cancel_tokens.lock().await;
-    if let Some(token) = tokens.remove(&session_id) {
+    let found = tokens.remove(&session_id);
+    if let Some(token) = found {
         token.cancel();
+        let mut port = proxy_state.local_port.lock().await;
+        *port = None;
     }
-    let mut port = proxy_state.local_port.lock().await;
-    *port = None;
     Ok(())
 }
 
@@ -241,5 +251,18 @@ pub async fn join_game(
         ip: host_ip,
         port: host_port,
     };
+    #[cfg(target_os = "windows")]
+    {
+        let deadline = tokio::time::Instant::now() + tokio::time::Duration::from_secs(10);
+        loop {
+            if tokio::net::TcpStream::connect(format!("127.0.0.1:{}", host_port)).await.is_ok() {
+                break;
+            }
+            if tokio::time::Instant::now() >= deadline {
+                return Err("Timed out waiting for relay proxy".into());
+            }
+            tokio::time::sleep(std::time::Duration::from_millis(200)).await;
+        }
+    } //neo: workaround for Windows having a race condition where the game is launched before the relay proxy
     crate::commands::game::launch_game(app, game_state, instance_id, vec![server], vec![]).await
 }
