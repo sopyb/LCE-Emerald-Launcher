@@ -46,7 +46,7 @@ const SettingsView = memo(function SettingsView() {
   } = useConfig();
   const {
     currentTrack,
-    setCurrentTrack,
+    skipTrack,
     tracks,
     playPressSound,
     playBackSound,
@@ -73,6 +73,8 @@ const SettingsView = memo(function SettingsView() {
   const [showModal, setShowModal] = useState<
     "args" | "prefix" | "envVars" | null
   >(null);
+  //jandrozdz: Added so track doesn't skip forever after pressing once
+  const isSkippingRef = useRef(false);
   useEffect(() => {
     TauriService.getAvailableRunners().then(setRunners);
   }, [isRunnerDownloading]);
@@ -136,8 +138,13 @@ const SettingsView = memo(function SettingsView() {
   };
 
   const handleTrackToggle = () => {
+    if (isSkippingRef.current) return;
     playPressSound();
-    setCurrentTrack((currentTrack + 1) % tracks.length);
+    isSkippingRef.current = true;
+    skipTrack(); //jandrozdz: Use skipTrack here
+    setTimeout(() => {
+      isSkippingRef.current = false;
+    }, 100);
   };
 
   const handleResetSetup = () => {

@@ -45,7 +45,7 @@ export function useAudioController({
     }
     return audioContextRef.current;
   }, []);
-
+  const isManualSkipRef = useRef(false);
   const ensureAudioContextReady = useCallback(async () => {
     const ctx = getAudioContext();
     if (ctx.state === "suspended") {
@@ -116,21 +116,16 @@ export function useAudioController({
     async (buffer: AudioBuffer, startTime: number = 0) => {
       const ctx = await ensureAudioContextReady();
       stopMusic();
-
       const source = ctx.createBufferSource();
       const gainNode = ctx.createGain();
-
       source.buffer = buffer;
       gainNode.gain.value = 0;
       source.connect(gainNode);
       gainNode.connect(ctx.destination);
-
       const offset = startTime % buffer.duration;
       source.start(0, offset);
-
       musicSourceRef.current = source;
       musicGainRef.current = gainNode;
-
       const steps = 5;
       const stepDuration = 100;
       let currentStep = 0;
@@ -148,11 +143,11 @@ export function useAudioController({
           }
         }
       }, stepDuration);
-
       source.onended = () => {
-        if (musicSourceRef.current) {
+        if (musicSourceRef.current && !isManualSkipRef.current) {
           setCurrentTrack((prev) => (prev + 1) % TRACKS.length);
         }
+        isManualSkipRef.current = false;
       };
     },
     [stopMusic, ensureAudioContextReady],
@@ -197,24 +192,19 @@ export function useAudioController({
     async (buffer: AudioBuffer, targetVolume: number, duration: number = 500) => {
       const ctx = await ensureAudioContextReady();
       stopMusic();
-
       const source = ctx.createBufferSource();
       const gainNode = ctx.createGain();
-
       source.buffer = buffer;
       gainNode.gain.value = 0;
       source.connect(gainNode);
       gainNode.connect(ctx.destination);
       source.start();
-
       musicSourceRef.current = source;
       musicGainRef.current = gainNode;
       targetVolumeRef.current = targetVolume;
-
       const steps = 5;
       const stepDuration = duration / steps;
       let currentStep = 0;
-
       fadeIntervalRef.current = window.setInterval(() => {
         currentStep++;
         const progress = currentStep / steps;
@@ -231,9 +221,10 @@ export function useAudioController({
       }, stepDuration);
 
       source.onended = () => {
-        if (musicSourceRef.current) {
+        if (musicSourceRef.current && !isManualSkipRef.current) {
           setCurrentTrack((prev) => (prev + 1) % TRACKS.length);
         }
+        isManualSkipRef.current = false;
       };
     },
     [stopMusic, ensureAudioContextReady],
@@ -247,7 +238,10 @@ export function useAudioController({
     } while (newIndex === splashIndex && SPLASHES.length > 1);
     setSplashIndex(newIndex);
   }, [playSplashSound, splashIndex]);
-
+  const skipTrack = useCallback(() => {
+    isManualSkipRef.current = true;
+    setCurrentTrack((prev) => (prev + 1) % TRACKS.length);
+  }, []);
   const [isMusicStarted, setIsMusicStarted] = useState(false);
 
   const startMusic = useCallback(() => {
@@ -342,6 +336,7 @@ export function useAudioController({
   return {
     currentTrack,
     setCurrentTrack,
+    skipTrack,
     splashIndex,
     setSplashIndex,
     cycleSplash,
