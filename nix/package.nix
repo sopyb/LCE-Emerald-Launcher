@@ -15,6 +15,8 @@
   libayatana-appindicator,
   librsvg,
   udev,
+  python3,
+  libarchive,
   src ? null,
 }:
 
@@ -105,6 +107,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   preFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
     gappsWrapperArgs+=(
+      --prefix PATH : ${lib.makeBinPath [ python3 libarchive ]}
       --prefix LD_LIBRARY_PATH : ${
         lib.makeLibraryPath [
           libayatana-appindicator
